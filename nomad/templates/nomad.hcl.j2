@@ -1,0 +1,40 @@
+data_dir = "/var/nomad"
+datacenter = "my_datacenter"
+bind_addr = "0.0.0.0"
+
+advertise {
+  http = "127.0.0.1:4646"
+  rpc  = "127.0.0.1:4647"
+  serf = "127.0.0.1:4648"
+}
+
+server {
+  enabled = true
+  bootstrap_expect = 1
+}
+
+consul {
+  address = "localhost:8500"
+  auto_advertise = true
+  server_service_name = "nomad"
+  client_service_name = "nomad-client"
+}
+
+tls {
+  http = false
+  rpc  = false
+}
+
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}
+
+client {
+  enabled = true
+  network_interface = "eth0"  # Replace with your network interface
+  options = {
+    "driver.raw_exec.enable" = "1"
+    "plugin_dir" = "/opt/cni/bin"  # This should point to the directory where your CNI plugins are located
+  }
+}

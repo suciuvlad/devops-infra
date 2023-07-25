@@ -1,0 +1,13 @@
+[Unit]
+Description=Vault
+Documentation=https://www.vaultproject.io/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/vault server -config=/etc/vault.d/
+ExecReload=/bin/kill -HUP $MAINPID
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

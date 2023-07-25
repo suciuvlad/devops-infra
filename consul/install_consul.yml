@@ -1,0 +1,56 @@
+---
+- hosts: consul_servers
+  gather_facts: true
+  become: yes
+
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - unzip
+        - curl
+
+    - name: Download and install Consul
+      unarchive:
+        src: "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip"
+        dest: /usr/local/bin/
+        remote_src: yes
+      vars:
+        consul_version: "1.16.0"
+
+    - name: Ensure Consul binary is executable
+      file:
+        path: /usr/local/bin/consul
+        mode: "+x"
+
+    - name: Create Consul configuration directory
+      file:
+        path: /etc/consul.d
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create Consul data directory
+      file:
+        path: /var/lib/consul
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create Consul service file
+      template:
+        src: consul.service.j2
+        dest: /etc/systemd/system/consul.service
+      notify:
+        - Reload systemd
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+        name: consul
+        state: restarted

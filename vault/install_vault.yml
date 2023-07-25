@@ -1,0 +1,61 @@
+---
+- name: Install Vault
+  hosts: vault_server
+  become: true
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - unzip
+        - curl
+
+    - name: Download Vault binary
+      get_url:
+        url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+        dest: /tmp/vault.zip
+      vars:
+        vault_version: "1.8.2"
+
+    - name: Unzip Vault binary
+      unarchive:
+        src: /tmp/vault.zip
+        dest: /usr/local/bin/
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Ensure Vault binary is executable
+      file:
+        path: /usr/local/bin/vault
+        mode: "+x"
+
+    - name: Create Vault configuration directory
+      file:
+        path: /etc/vault.d
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create Vault data directory
+      file:
+        path: /var/lib/vault
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create Vault service file
+      template:
+        src: vault.service.j2
+        dest: /etc/systemd/system/vault.service
+      notify:
+        - Reload systemd
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+        name: vault
+        state: restarted

@@ -1,0 +1,29 @@
+---
+- name: Remove existing Consul installation
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Stop Consul service
+      systemd:
+        name: consul
+        state: stopped
+        enabled: no
+
+    - name: Remove Consul binary
+      file:
+        path: /usr/local/bin/consul
+        state: absent
+
+    - name: Remove Consul configuration directory
+      file:
+        path: /etc/consul.d
+        state: absent
+        recurse: yes
+        force: yes
+
+    - name: Remove Consul data directory
+      file:
+        path: /var/lib/consul
+        state: absent
+        recurse: yes
+        force: yes

@@ -1,0 +1,15 @@
+[Unit]
+Description=Nomad
+Documentation=https://www.nomadproject.io/docs/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/nomad agent -config=/etc/nomad.d/client.hcl
+Restart=on-failure
+LimitNOFILE=81920
+LimitNPROC=81920
+TasksMax=81920
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,78 @@
+---
+- name: Install Nomad Client
+  hosts: nomad_clients
+  become: true
+  vars:
+    nomad_version: "1.6.1"  # Specify the desired version of Nomad
+    nomad_binary_dir: "/usr/local/bin"  # Change this path if necessary
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - unzip
+        - curl
+
+    - name: Download Nomad binary
+      get_url:
+        url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_amd64.zip"
+        dest: "{{ nomad_binary_dir }}/nomad_{{ nomad_version }}.zip"
+        mode: "0644"  # Set appropriate permissions
+
+    - name: Unzip Nomad binary
+      unarchive:
+        src: "{{ nomad_binary_dir }}/nomad_{{ nomad_version }}.zip"
+        dest: "{{ nomad_binary_dir }}"
+        remote_src: yes
+        creates: "{{ nomad_binary_dir }}/nomad"  # This ensures it's not extracted again if the binary is already present
+
+    - name: Ensure Nomad binary is executable
+      file:
+        path: "{{ nomad_binary_dir }}/nomad"
+        mode: "+x"
+
+    - name: Create Nomad configuration directory
+      file:
+        path: /etc/nomad.d
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create Nomad data directory
+      file:
+        path: /var/nomad
+        state: directory
+        mode: '0755'
+
+    - name: Create Nomad client configuration file
+      template:
+        src: client.hcl.j2  # Ensure you have this template file in your ansible directory
+        dest: /etc/nomad.d/client.hcl
+      notify:
+        - Reload Nomad
+
+    - name: Create Nomad client service file
+      template:
+        src: client.service.j2  # Ensure you have this template file in your ansible directory
+        dest: /etc/systemd/system/nomad-client.service
+      notify: 
+        - Reload systemd
+
+    - name: Start Nomad client service
+      systemd:
+        name: nomad-client
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload Nomad
+      systemd:
+        daemon_reload: yes
+        name: nomad
+        state: reloaded
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes

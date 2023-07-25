@@ -1,0 +1,28 @@
+data_dir = "/var/nomad"
+log_level = "DEBUG"
+leave_on_terminate = true
+
+client {
+  enabled = true
+  servers = ["localhost:4647"]
+  node_class = "go-service"
+  options {
+    "driver.raw_exec.enable" = "1"
+  }
+}
+
+plugin "docker" {
+  config {
+    auth {
+      config = "/home/ubuntu/.docker/config.json"
+    }
+  }
+}
+
+datacenter = "my_datacenter"
+
+advertise {
+  http = "127.0.0.1"
+  rpc = "127.0.0.1"
+  serf = "127.0.0.1:4648"
+}

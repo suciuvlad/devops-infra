@@ -1,0 +1,62 @@
+---
+- name: Install Traefik
+  hosts: traefik_servers
+  become: true
+  vars:
+    traefik_version: "2.10.4"
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - unzip
+        - curl
+
+    - name: Download Traefik binary
+      get_url:
+        url: "https://github.com/traefik/traefik/releases/download/v{{ traefik_version }}/traefik_v{{ traefik_version }}_linux_amd64.tar.gz"
+        dest: "/tmp/traefik_v{{ traefik_version }}.tar.gz"  # Unique filename based on version
+
+    - name: Unarchive Traefik binary
+      unarchive:
+        src: "/tmp/traefik_v{{ traefik_version }}.tar.gz"  # Use the same unique filename
+        dest: /usr/local/bin/
+        remote_src: yes
+
+    - name: Ensure Traefik binary is executable
+      file:
+        path: /usr/local/bin/traefik
+        mode: "+x"
+
+    - name: Create Traefik configuration directory
+      file:
+        path: /etc/traefik
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Create Traefik configuration file
+      copy:
+        src: traefik.yaml
+        dest: /etc/traefik/traefik.yaml
+        mode: "0644"
+
+    - name: Create Traefik dynamic configuration file
+      copy:
+        src: dynamic_conf.yaml
+        dest: /etc/traefik/dynamic_conf.yaml
+        mode: "0644"
+
+    - name: Create Traefik service file
+      template:
+        src: traefik.service.j2
+        dest: /etc/systemd/system/traefik.service
+        mode: '0644'
+
+    - name: Start Traefik service
+      systemd:
+        name: traefik
+        state: started
+        enabled: yes

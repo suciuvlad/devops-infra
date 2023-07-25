@@ -1,0 +1,15 @@
+[Unit]
+Description=Traefik
+After=network-online.target
+Wants=network-online.target
+Documentation=https://doc.traefik.io/traefik/
+
+[Service]
+ExecStart=/usr/local/bin/traefik --configFile=/etc/traefik/traefik.yaml
+Restart=on-failure
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=traefik
+
+[Install]
+WantedBy=multi-user.target
