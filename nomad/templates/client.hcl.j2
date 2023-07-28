@@ -4,11 +4,23 @@ leave_on_terminate = true
 
 client {
   enabled = true
-  servers = ["localhost:4647"]
-  node_class = "go-service"
+  servers = ["{{ nomad_server_address }}:4647"]
   options {
     "driver.raw_exec.enable" = "1"
   }
+}
+
+consul {
+  address = "194.182.170.238:8500"  # Replace with the address of your Consul server if not on the same host
+
+  # The name of the agent in Consul as it will be seen by other members of the Consul cluster
+  client_service_name = "nomad-client"
+
+  # Automatically advertise services and checks to Consul
+  auto_advertise = true
+
+  # Automatically join Consul
+  client_auto_join = true
 }
 
 plugin "docker" {
@@ -22,7 +34,7 @@ plugin "docker" {
 datacenter = "my_datacenter"
 
 advertise {
-  http = "127.0.0.1"
-  rpc = "127.0.0.1"
-  serf = "127.0.0.1:4648"
+  http = "194.182.168.73"
+  rpc = "194.182.168.73"
+  serf = "194.182.168.73:4648"
 }

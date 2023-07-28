@@ -1,0 +1,11 @@
+{
+  "Service": {
+    "Name": "nomad-ui",
+    "Tags": [
+      "traefik.enable=true",
+      "traefik.http.routers.nomad-ui.rule=Host(`nomad.purposeinplay.com`)"
+    ],
+    "Port": 4646,
+    "Address": "localhost"
+  }
+}

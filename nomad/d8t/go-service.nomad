@@ -19,8 +19,8 @@ job "go-service" {
       // Traefik Labels
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.my-app.rule=Host(`traefik.purposeinplay.com`)",
-        "traefik.http.services.my-app.loadbalancer.server.port=8080"
+        "traefik.http.routers.http.rule=Host(`traefik.purposeinplay.com`)",
+        "traefik.http.services.http.loadbalancer.server.port=8080"
       ]
 
       connect {
@@ -41,6 +41,9 @@ job "go-service" {
 
       config {
         image = "ghcr.io/suciuvlad/my-go-app:latest"
+
+        auth {
+        }
       }
 
       resources {

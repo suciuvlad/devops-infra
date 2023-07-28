@@ -1,0 +1,13 @@
+{
+  "bind_addr": "{{ ansible_default_ipv4.address }}",
+  "datacenter": "my_datacenter",
+  "log_level": "INFO",
+  "enable_syslog": true,
+  "ui": false,
+  "server": false,
+  "retry_join": ["{{ consul_server_address }}"],
+  "data_dir": "/var/lib/consul",
+  "ports": {
+    "grpc": 8502
+  }
+}

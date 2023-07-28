@@ -5,6 +5,8 @@
   vars:
     nomad_version: "1.6.1"  # Specify the desired version of Nomad
     nomad_binary_dir: "/usr/local/bin"  # Change this path if necessary
+    cni_plugins_version: "v0.9.1"  # Specify the desired version of CNI plugins
+    cni_plugins_dir: "/opt/cni/bin"  # Change this path if necessary
   tasks:
     - name: Install dependencies
       apt:
@@ -59,6 +61,18 @@
         dest: /etc/systemd/system/nomad.service
       notify: 
         - Reload systemd
+
+    - name: Create CNI plugins directory
+      file:
+        path: "{{ cni_plugins_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download and install CNI plugins
+      unarchive:
+        src: "https://github.com/containernetworking/plugins/releases/download/{{ cni_plugins_version }}/cni-plugins-linux-amd64-{{ cni_plugins_version }}.tgz"
+        dest: "{{ cni_plugins_dir }}"
+        remote_src: true
 
     - name: Start Nomad service
       systemd:

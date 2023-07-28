@@ -12,6 +12,11 @@ providers:
     endpoint:
       address: "http://127.0.0.1:4646"
     exposedByDefault: false
+  consulCatalog:
+    prefix: "traefik"
+    exposedByDefault: false
+    endpoint:
+      address: "http://127.0.0.1:8500"  # change to your Consul server address if it's not on localhost
 
 api:
   insecure: true

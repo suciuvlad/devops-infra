@@ -5,6 +5,10 @@
   vars:
     nomad_version: "1.6.1"  # Specify the desired version of Nomad
     nomad_binary_dir: "/usr/local/bin"  # Change this path if necessary
+    cni_plugins_version: "v0.9.1"  # Specify the desired version of CNI plugins
+    cni_plugins_dir: "/opt/cni/bin"  # Change this path if necessary
+    nomad_server_address: 194.182.170.238
+    nomad_client_machine_address: 194.182.168.73
   tasks:
     - name: Install dependencies
       apt:
@@ -51,14 +55,14 @@
         src: client.hcl.j2  # Ensure you have this template file in your ansible directory
         dest: /etc/nomad.d/client.hcl
       notify:
-        - Reload Nomad
+        - Restart Nomad
 
     - name: Create Nomad client service file
       template:
         src: client.service.j2  # Ensure you have this template file in your ansible directory
         dest: /etc/systemd/system/nomad-client.service
       notify: 
-        - Reload systemd
+        - Restart systemd
 
     - name: Start Nomad client service
       systemd:
@@ -66,12 +70,24 @@
         state: started
         enabled: yes
 
+    - name: Create CNI plugins directory
+      file:
+        path: "{{ cni_plugins_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download and install CNI plugins
+      unarchive:
+        src: "https://github.com/containernetworking/plugins/releases/download/{{ cni_plugins_version }}/cni-plugins-linux-amd64-{{ cni_plugins_version }}.tgz"
+        dest: "{{ cni_plugins_dir }}"
+        remote_src: true
+
   handlers:
-    - name: Reload Nomad
+    - name: Restart Nomad
       systemd:
+        name: nomad-client
+        state: restarted
         daemon_reload: yes
-        name: nomad
-        state: reloaded
 
     - name: Reload systemd
       systemd:

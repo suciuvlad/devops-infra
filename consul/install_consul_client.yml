@@ -1,14 +1,17 @@
 ---
-- hosts: consul_servers
+- hosts: consul_clients
   gather_facts: true
   become: yes
 
+  vars:
+    consul_server_address: "194.182.170.238"  # IP address of your Consul server
+  
   tasks:
     - name: Install dependencies
       apt:
         name: "{{ item }}"
         state: present
-      with_items:
+      loop:
         - unzip
         - curl
 
@@ -33,20 +36,10 @@
         owner: root
         group: root
 
-    - name: Create consul configuration file from template
+    - name: Create Consul client configuration file from template
       template:
-        src: consul_config.j2
+        src: consul_client.config.j2
         dest: /etc/consul.d/consul.json
-      vars:
-        bind_addr: "{{ ansible_default_ipv4.address }}"
-        datacenter: "my_datacenter"
-        log_level: "INFO"
-        enable_syslog: true
-        ui: true
-        server: true
-        bootstrap_expect: 1
-        data_dir: "/var/lib/consul"
-        grpc_port: 8502
       notify:
         - Reload systemd
 
